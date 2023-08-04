@@ -13,6 +13,10 @@ RUN go mod init my_telegram_bot && go mod tidy
 COPY main.go ./
 RUN test -f main.go
 
+# Устанавливаем аргумент сборки TELEGRAM_API_TOKEN для передачи значения во второй этап
+ARG TELEGRAM_API_TOKEN
+ENV TELEGRAM_API_TOKEN=$TELEGRAM_API_TOKEN
+
 # Этап 2: Сборка бота
 RUN go build -o bot main.go
 
@@ -24,9 +28,5 @@ WORKDIR /app
 # Копируем исполняемый файл бота из предыдущего этапа
 COPY --from=builder /app/bot .
 
-# Устанавливаем аргумент сборки TELEGRAM_API_TOKEN в качестве переменной окружения
-ARG TELEGRAM_API_TOKEN
-ENV TELEGRAM_API_TOKEN=$TELEGRAM_API_TOKEN
-
 # Запускаем бота с передачей токена через параметр -token
-CMD ["./bot", "-token", "$TELEGRAM_API_TOKEN"]
+CMD ["./bot", "-token", "${TELEGRAM_API_TOKEN}"]
