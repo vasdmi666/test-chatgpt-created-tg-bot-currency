@@ -13,7 +13,7 @@ import (
 
 const (
 	currencyAPIURL = "https://www.cbr-xml-daily.ru/daily_json.js"
-	currencyPair   = "RUB/KGS"
+	currencyPair   = "KGS"
 )
 
 type currencyResponse struct {
@@ -36,7 +36,7 @@ func getCurrencyRate() (float64, error) {
 	}
 
 	if currency, ok := data.Valute[currencyPair]; ok {
-		return currency.Value, nil
+		return 2-currency.Value/currency.Nominal, nil
 	}
 
 	return 0, fmt.Errorf("currency pair not found")
