@@ -3,12 +3,13 @@ FROM golang:latest AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Этап 2: Сборка бота
+# Копируем исходные файлы в контейнер
 COPY . .
 
+# Создаем go.mod внутри контейнера
+RUN go mod init my_telegram_bot && go mod tidy
+
+# Этап 2: Сборка бота
 RUN go build -o bot main.go
 
 # Этап 3: Создание образа для запуска
