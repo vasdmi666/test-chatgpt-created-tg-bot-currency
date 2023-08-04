@@ -26,7 +26,7 @@ cd test-chatgpt-created-tg-bot-currency
 3. Соберите Docker контейнер:
 
 ```
-docker build -t telegram-bot .
+docker build -t telegram-bot --build-arg TELEGRAM_API_TOKEN=YOUR_TELEGRAM_API_TOKEN .
 ```
 
 4. Запустите Docker контейнер, передав API токен в качестве параметра:
