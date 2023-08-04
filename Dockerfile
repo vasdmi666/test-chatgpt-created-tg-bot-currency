@@ -1,17 +1,21 @@
-# Используем официальный образ Golang в качестве базового
-FROM golang:latest
+# Этап 1: Установка зависимостей и создание go.mod
+FROM golang:latest AS builder
 
-# Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
 
-# Копируем исходные файлы в контейнер
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Этап 2: Сборка бота
 COPY . .
 
-# Собираем исполняемый файл с передачей параметра -token при сборке
 RUN go build -o bot main.go
 
-# Запускаем бота при старте контейнера с передачей параметра -token
+# Этап 3: Создание образа для запуска
+FROM golang:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/bot .
+
 CMD ["./bot", "-token", "${TELEGRAM_API_TOKEN}"]
