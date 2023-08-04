@@ -93,6 +93,7 @@ func main() {
 
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
+		fmt.Println("Current token:", botToken)
 		fmt.Println("Error initializing Telegram bot:", err)
 		return
 	}
