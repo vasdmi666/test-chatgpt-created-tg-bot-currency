@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -19,6 +18,7 @@ const (
 type currencyResponse struct {
 	Valute map[string]struct {
 		Value float64 `json:"Value"`
+		Nominal float64 `json:"Nominal"`
 	} `json:"Valute"`
 }
 
