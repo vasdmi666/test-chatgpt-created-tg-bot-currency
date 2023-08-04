@@ -19,4 +19,4 @@ WORKDIR /app
 
 COPY --from=builder /app/bot .
 
-CMD ["./bot", "-token", "${TELEGRAM_API_TOKEN}"]
+CMD ["./bot", "-token", ${TELEGRAM_API_TOKEN}]
