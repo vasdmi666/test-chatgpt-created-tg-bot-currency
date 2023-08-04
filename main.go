@@ -1,10 +1,11 @@
 package main
 
 import (
-	"flag"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -41,8 +42,8 @@ func getCurrencyRate() (float64, error) {
 	return 0, fmt.Errorf("currency pair not found")
 }
 
-func sendNotification(chatID int64, message string, botToken string) {
-	bot, err := tgbotapi.NewBotAPI(botToken)
+func sendNotification(chatID int64, message string) {
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_API_TOKEN"))
 	if err != nil {
 		fmt.Println("Error initializing Telegram bot:", err)
 		return
@@ -55,19 +56,17 @@ func sendNotification(chatID int64, message string, botToken string) {
 	}
 }
 
-func monitorCurrency(chatID int64, botToken string) {
+func monitorCurrency(chatID int64) {
 	prevRate, err := getCurrencyRate()
 	if err != nil {
 		fmt.Println("Error fetching initial currency rate:", err)
 		return
 	}
 
-	sendNotification(chatID, fmt.Sprintf("Monitoring %s has started. Current rate: %.2f RUB/KGS.", currencyPair, prevRate), botToken)
+	sendNotification(chatID, fmt.Sprintf("Monitoring %s has started. Current rate: %.2f RUB/KGS.", currencyPair, prevRate))
 
-	ticker := time.NewTicker(60 * time.Second) // Периодичность проверки курса (в секундах), здесь установлено 60 секунд
-	defer ticker.Stop()
-
-	for range ticker.C {
+	for {
+		time.Sleep(60 * time.Second) // Периодичность проверки курса (в секундах), здесь установлено 60 секунд
 		currentRate, err := getCurrencyRate()
 		if err != nil {
 			fmt.Println("Error fetching current currency rate:", err)
@@ -75,25 +74,21 @@ func monitorCurrency(chatID int64, botToken string) {
 		}
 
 		if currentRate != prevRate {
-			sendNotification(chatID, fmt.Sprintf("%s rate has changed. Current rate: %.2f RUB/KGS.", currencyPair, currentRate), botToken)
+			sendNotification(chatID, fmt.Sprintf("%s rate has changed. Current rate: %.2f RUB/KGS.", currencyPair, currentRate))
 			prevRate = currentRate
 		}
 	}
 }
 
 func main() {
-	var botToken string
-	flag.StringVar(&botToken, "token", "", "Telegram API token")
-	flag.Parse()
-
+	botToken := os.Getenv("TELEGRAM_API_TOKEN")
 	if botToken == "" {
-		fmt.Println("Telegram API token not provided. Please set the -token flag.")
+		fmt.Println("Telegram API token not provided. Please set the TELEGRAM_API_TOKEN environment variable.")
 		return
 	}
 
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
-		fmt.Println("Current token:", botToken)
 		fmt.Println("Error initializing Telegram bot:", err)
 		return
 	}
@@ -114,10 +109,10 @@ func main() {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "start":
-				sendNotification(update.Message.Chat.ID, "Hello! I'm monitoring RUB/KGS rate and will notify you about its changes.", botToken)
-				go monitorCurrency(update.Message.Chat.ID, botToken)
+				sendNotification(update.Message.Chat.ID, "Hello! I'm monitoring RUB/KGS rate and will notify you about its changes.")
+				go monitorCurrency(update.Message.Chat.ID)
 			case "stop":
-				sendNotification(update.Message.Chat.ID, "Monitoring RUB/KGS has been stopped.", botToken)
+				sendNotification(update.Message.Chat.ID, "Monitoring RUB/KGS has been stopped.")
 			}
 		}
 	}
